@@ -151,6 +151,28 @@
         </filter>
     </appender>
 
+
+    <!-- 时间滚动输出 level为 ERROR 日志 -->
+    <appender name="SM_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 正在记录的日志文件的路径及文件名 -->
+        <file>${log.path}/log_sm.log</file>
+        <!--日志文件输出格式-->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level - %msg%n</pattern>
+            <charset>UTF-8</charset> <!-- 此处设置字符集 -->
+        </encoder>
+        <!-- 日志记录器的滚动策略，按日期，按大小记录 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/log_sm/log-sm-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <!--日志文件保留天数-->
+            <maxHistory>1</maxHistory>
+        </rollingPolicy>
+    </appender>
+
     <!--
         <logger>用来设置某一个包或者具体的某一个类的日志打印级别、
         以及指定<appender>。<logger>仅有一个name属性，
@@ -174,6 +196,10 @@
 
     <logger name="pers.haike" level="DEBUG" inheried="false">
         <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <logger name="pers.haike.demo.statemachine" level="DEBUG" inheried="false">
+        <appender-ref ref="SM_FILE"/>
     </logger>
 
     <logger name="org.springframework" level="WARN" inheried="false">

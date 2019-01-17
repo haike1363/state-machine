@@ -1,5 +1,6 @@
 package pers.haike.demo.statemachine;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.statemachine.action.StateDoActionPolicy;
 import org.springframework.statemachine.config.EnableStateMachineFactory;
@@ -15,9 +16,12 @@ import java.util.EnumSet;
 @EnableStateMachineFactory
 public class ClusterFactory extends EnumStateMachineConfigurerAdapter<States, Events> {
 
+    @Autowired
+    public ClusterRepository clusterRepository;
+
     @Override
     public void configure(StateMachineConfigurationConfigurer<States, Events> config) throws Exception {
-        // interrupting action immediately when state is exited
+        // interrupting state action immediately when state is exited
         config.withConfiguration()
                 .stateDoActionPolicy(StateDoActionPolicy.IMMEDIATE_CANCEL);
         config.withConfiguration()

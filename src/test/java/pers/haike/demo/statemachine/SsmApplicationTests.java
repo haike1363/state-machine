@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.config.StateMachineFactory;
 import org.springframework.test.context.junit4.SpringRunner;
+import pers.haike.demo.statemachine.entity.Cluster;
 
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -39,12 +40,12 @@ public class SsmApplicationTests {
 
     @Test
     public void testCreateEvent() throws Exception {
-        StateMachine<States, Events> machinef = factory.getStateMachine("e");
+        StateMachine<States, Events> machinef = clusterBuilder.create("test", new Cluster());
         machinef.start();
         machinef.sendEvent(Events.START_CREATE);
-        Thread.sleep(1000);
-        machinef.sendEvent(Events.CREATE_OK);
-        Thread.sleep(1000);
+        // machinef.sendEvent(Events.CREATE_OK);
+        // 事件是异步顺序处理的，如果没有被异步处理，会默默丢弃
+        // machinef.sendEvent(Events.START_DELETE);
+        Thread.sleep(10 * 1000);
     }
 }
-

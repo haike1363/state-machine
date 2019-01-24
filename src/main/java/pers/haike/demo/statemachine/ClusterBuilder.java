@@ -1,6 +1,7 @@
 package pers.haike.demo.statemachine;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.Message;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.action.StateDoActionPolicy;
 import org.springframework.statemachine.config.StateMachineBuilder;
@@ -8,6 +9,10 @@ import org.springframework.statemachine.config.builders.StateMachineConfiguratio
 import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
 import org.springframework.statemachine.config.configurers.StateConfigurer;
+import org.springframework.statemachine.persist.StateMachineRuntimePersister;
+import org.springframework.statemachine.state.State;
+import org.springframework.statemachine.support.StateMachineInterceptorAdapter;
+import org.springframework.statemachine.transition.Transition;
 import org.springframework.stereotype.Component;
 import pers.haike.demo.statemachine.entity.Cluster;
 
@@ -17,7 +22,10 @@ import java.util.EnumSet;
 public class ClusterBuilder {
 
     @Autowired
-    ClusterRepository clusterRepository;
+    private StateMachineRuntimePersister<States, Events, String> stateMachineRuntimePersister;
+
+    @Autowired
+    private ClusterRepository clusterRepository;
 
     public StateMachine<States, Events> create(String id, Cluster cluster) throws Exception {
         cluster.setId(id);
@@ -26,10 +34,24 @@ public class ClusterBuilder {
         clusterRunner.setCluster(cluster);
 
         StateMachineBuilder.Builder<States, Events> builder = StateMachineBuilder.builder();
+
         configure(builder.configureConfiguration(), id);
         configure(builder.configureStates(), clusterRunner);
         configure(builder.configureTransitions(), clusterRunner);
         StateMachine<States, Events> stateMachine = builder.build();
+        stateMachine.getStateMachineAccessor().withRegion().addStateMachineInterceptor(new StateMachineInterceptorAdapter<States, Events>() {
+
+            @Override
+            public void preStateChange(State<States, Events> state, Message<Events> message, Transition<States, Events> transition, StateMachine<States, Events> stateMachine) {
+                // TODO 保存数据库状态信息
+            }
+
+            @Override
+            public Exception stateMachineError(StateMachine<States, Events> stateMachine, Exception exception) {
+                return null;
+            }
+        });
+
         stateMachine.getExtendedState().getVariables().put("cluster", clusterRunner);
 //        stateMachine.getStateMachineAccessor().withRegion().addStateMachineInterceptor(new StateMachineInterceptorAdapter<States, Events>() {
 //            @Override
@@ -75,7 +97,6 @@ public class ClusterBuilder {
 //                    .withPayload("E1")
 //                    .setHeader(StateMachineMessageHeaders.HEADER_DO_ACTION_TIMEOUT, 5000)
 //                    .build());
-
     }
 
     private void configure(StateMachineStateConfigurer<States, Events> states, ClusterRunner cluster)
